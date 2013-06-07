@@ -43,7 +43,8 @@ while 1:
     except:
         pass
     #print "camx: ", camx, "servox:", servox
-    
+    if camx == -2:
+        continue
     if camx == -1:
         servox = 90
     

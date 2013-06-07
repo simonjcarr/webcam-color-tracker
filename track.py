@@ -1,15 +1,20 @@
 #! /usr/bin/env python 
  
 import cv 
- 
+import time
+
 color_tracker_window = "Preston HackSpace 2013 BarCamp Project" 
  
 class ColorTracker: 
     x = 0
     y = 0
+    
     def __init__(self): 
         cv.NamedWindow( color_tracker_window, 1 ) 
         self.capture = cv.CaptureFromCAM(0) 
+        self.tracking = False
+        self.lasttrack = None
+        self.hang_around_seconds = 5
         
     def run(self): 
         count = 0
@@ -48,6 +53,8 @@ class ColorTracker:
             
             #there can be noise in the video so ignore objects with small areas 
             if(area > 100000): 
+                self.tracking = True
+                self.lasttrack = time.time()
                 #determine the x and y coordinates of the center of the object 
                 #we are tracking by dividing the 1, 0 and 0, 1 moments by the area 
                 x = cv.GetSpatialMoment(moments, 1, 0)/area 
@@ -69,9 +76,19 @@ class ColorTracker:
                 #left after it was applied 
                 cv.Merge(thresholded_img, None, None, None, img) 
             else:
-                f = open('values.txt',"w")
-                f.write("-1:-1")
-                f.close()
+                if self.tracking == True:
+                    #We have just lost track of the object we need to hang around for a bit 
+                    #to see if the object comes back.
+                    f = open('values.txt','w')
+                    f.write("-2:-2") #This tells the firmata script to stop moving the servos
+                    f.close()
+                    if time.time() >= self.lasttrack + self.hang_around_seconds:
+                        self.tracking = False
+                      
+                if self.tracking == False:
+                    f = open('values.txt',"w")
+                    f.write("-1:-1")
+                    f.close()
             #display the image  
             cv.ShowImage(color_tracker_window, img) 
             
