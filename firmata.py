@@ -5,6 +5,10 @@ import time
 
 board = ArduinoMega('com3')
 board.digital[7].mode = SERVO
+
+window_width = 600
+window_height = 400
+
 def translate(value, leftMin, leftMax, rightMin, rightMax):
     # Figure out how 'wide' each range is
     leftSpan = leftMax - leftMin
@@ -48,35 +52,35 @@ while 1:
     if camx == -1:
         servox = 90
     
-    #If object is in the middle of the camera dont do anything
-    if camx <290 or camx > 310:
     
-        #If the object has moved of the screen come back to the middle
-        if servox < 2 or servox > 179:
-            servox = 90
-        
-        #distance from center
-        if camx < 310:
-            distance = 310 - camx
-        else:
-            distance = camx - 300
-        
-        
-        speed = str(translate(distance,10,311,.05,.01))
-        print "Speed = " + speed, "distance = ", str(distance)
-        
-        
-        if camx > 320:
+    
+    #If the object has moved of the screen come back to the middle
+    if servox < 2 or servox > 179:
+        servox = 90
+    
+    #distance from center
+    if camx < (window_width / 2):
+        distance = (window_width / 2) - camx
+    else:
+        distance = camx - (window_width / 2)
+    
+    
+    speed = str(translate(distance,10,311,.05,.01))
+    print "Speed = " + speed, "distance = ", str(distance)
+    
+    
+    if distance > 50:
+        if camx > window_width / 2:
             for i in range(servox,servox - 1,-1):
                 servox -= 1
                 board.digital[7].write(i)
                 time.sleep(float(speed))
-        if camx < 280:
+        if camx < window_width / 2:
             for i in range(servox,servox + 1,1):
                 servox += 1
                 board.digital[7].write(i)
                 time.sleep(float(speed))
-        
+            
 
     
 
