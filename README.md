@@ -13,7 +13,8 @@ Instructions
 Install PyFirmata Standard to an ArduinoMega
 
 Attach the Arduino to the computer
-Connect a Servo to Pin 7
+Connect a Servo to Pin 7 (x axis - left and right)
+Connect a Servo to pin 6 (y axis - up and down)
 
 Install a WebCam and attach it to the servo horns (In what ever way you can, but make sure it is stable)
 
