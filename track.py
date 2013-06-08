@@ -21,12 +21,13 @@ class ColorTracker:
         while True: 
             
             img = cv.QueryFrame( self.capture ) 
-                        
+            img2 = cv.QueryFrame(self.capture)           
             #blur the source image to reduce color noise 
             cv.Smooth(img, img, cv.CV_BLUR, 3); 
             
             #convert the image to hsv(Hue, Saturation, Value) so its  
             #easier to determine the color to track(hue) 
+            
             hsv_img = cv.CreateImage(cv.GetSize(img), 8, 3) 
             cv.CvtColor(img, hsv_img, cv.CV_BGR2HSV) 
             
@@ -43,7 +44,7 @@ class ColorTracker:
             #Red 160-179
             
             thresholded_img =  cv.CreateImage(cv.GetSize(hsv_img), 8, 1) 
-            cv.InRangeS(hsv_img, (38, 80, 80), (75, 255, 255), thresholded_img) 
+            cv.InRangeS(hsv_img, (0, 120, 120), (15, 255, 255), thresholded_img) 
             #cv.InRangeS(hsv_img, (120, 80, 80), (140, 255, 255), thresholded_img) 
             #determine the objects moments and check that the area is large  
             #enough to be our object 
@@ -90,7 +91,7 @@ class ColorTracker:
                     f.write("-1:-1")
                     f.close()
             #display the image  
-            cv.ShowImage(color_tracker_window, img) 
+            cv.ShowImage(color_tracker_window, img2) 
             
             if cv.WaitKey(10) == 27: 
                 break 

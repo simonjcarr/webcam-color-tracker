@@ -6,7 +6,7 @@ import time
 board = ArduinoMega('com3')
 board.digital[7].mode = SERVO
 
-window_width = 600
+window_width = 650
 window_height = 400
 
 def translate(value, leftMin, leftMax, rightMin, rightMax):
@@ -69,7 +69,7 @@ while 1:
     print "Speed = " + speed, "distance = ", str(distance)
     
     
-    if distance > 50:
+    if distance > 60:
         if camx > window_width / 2:
             for i in range(servox,servox - 1,-1):
                 servox -= 1
