@@ -5,7 +5,7 @@ import time
 
 board = ArduinoMega('com3')
 board.digital[7].mode = SERVO
-
+board.digital[6].mode = SERVO
 window_width = 650
 window_height = 400
 
@@ -35,6 +35,7 @@ def getValues():
 lastValue = 1
 camx = 50
 servox = 90
+servoy = 90
 while 1:
     lastValue = servox
     try:
@@ -51,35 +52,55 @@ while 1:
         continue
     if camx == -1:
         servox = 90
+        servoy = 90
     
     
     
     #If the object has moved of the screen come back to the middle
-    if servox < 2 or servox > 179:
+    if servox < 2 or servox > 179 or servoy < 2 or servoy > 179:
         servox = 90
+        servoy = 90
     
-    #distance from center
+    #xdistance from centre
     if camx < (window_width / 2):
-        distance = (window_width / 2) - camx
+        xdistance = (window_width / 2) - camx
     else:
-        distance = camx - (window_width / 2)
+        xdistance = camx - (window_width / 2)
     
+    #ydistance from centre
+    if camy < (window_height / 2):
+        ydistance = (window_height / 2) - camy
+    else:
+        ydistance = camy - (window_height / 2)
+        
+    xspeed = str(translate(xdistance,10,(window_width / 2),.05,.01))
+    yspeed = str(translate(ydistance,10,(window_height / 2),.05,.01))
+    #print "xSpeed = " + xspeed, "xdistance = ", str(xdistance)
+    #print "ySpeed = " + yspeed, "ydistance = ", str(ydistance)
     
-    speed = str(translate(distance,10,311,.05,.01))
-    print "Speed = " + speed, "distance = ", str(distance)
-    
-    
-    if distance > 60:
+    if xdistance > 60:
         if camx > window_width / 2:
             for i in range(servox,servox - 1,-1):
                 servox -= 1
                 board.digital[7].write(i)
-                time.sleep(float(speed))
+                time.sleep(float(xspeed))
         if camx < window_width / 2:
             for i in range(servox,servox + 1,1):
                 servox += 1
                 board.digital[7].write(i)
-                time.sleep(float(speed))
+                time.sleep(float(xspeed))
+    
+    if ydistance > 60:
+        if camy < window_height / 2:
+            for i in range(servoy,servoy - 1,-1):
+                servoy -= 1
+                board.digital[6].write(i)
+                time.sleep(float(xspeed))
+        if camy > window_height / 2:
+            for i in range(servoy,servoy + 1,1):
+                servoy += 1
+                board.digital[6].write(i)
+                time.sleep(float(xspeed))
             
 
     
