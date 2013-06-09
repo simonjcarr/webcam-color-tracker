@@ -1,22 +1,28 @@
 #! /usr/bin/env python 
- 
+
 import cv 
 import time
 
-color_tracker_window = "Preston HackSpace 2013 BarCamp Project" 
- 
+
+#TrackType
+#Color = 1
+#Faces = 2
+TrackType = 2
 class ColorTracker: 
     x = 0
     y = 0
     
     def __init__(self): 
-        cv.NamedWindow( color_tracker_window, 1 ) 
-        self.capture = cv.CaptureFromCAM(0) 
+        pass
+        
+        
+    def runColor(self): 
         self.tracking = False
         self.lasttrack = None
         self.hang_around_seconds = 5
-        
-    def run(self): 
+        color_tracker_window = "Preston HackSpace 2013 BarCamp Project" 
+        cv.NamedWindow( color_tracker_window, 1 ) 
+        self.capture = cv.CaptureFromCAM(0) 
         count = 0
         while True: 
             
@@ -62,9 +68,7 @@ class ColorTracker:
                 y = cv.GetSpatialMoment(moments, 0, 1)/area 
                 
                 #Write the x,y coords to a file for the pyFirmata code to use for controlling the Arduino
-                f = open('values.txt',"w")
-                f.write(str(x) + ":" + str(y))
-                f.close()
+                self.WriteXY(x, y)
                 
                 
                 #create an overlay to mark the center of the tracked object 
@@ -80,22 +84,65 @@ class ColorTracker:
                 if self.tracking == True:
                     #We have just lost track of the object we need to hang around for a bit 
                     #to see if the object comes back.
-                    f = open('values.txt','w')
-                    f.write("-2:-2") #This tells the firmata script to stop moving the servos
-                    f.close()
+                    self.WriteXY(-2, -2)
                     if time.time() >= self.lasttrack + self.hang_around_seconds:
                         self.tracking = False
                       
                 if self.tracking == False:
-                    f = open('values.txt',"w")
-                    f.write("-1:-1")
-                    f.close()
+                    self.WriteXY(-1, -1)
             #display the image  
             cv.ShowImage(color_tracker_window, img2) 
             
             if cv.WaitKey(10) == 27: 
                 break 
+    
+    def WriteXY(self,X,Y):
+        f = open('values.txt',"w")
+        f.write(str(X) + ":" + str(Y))
+        f.close()
+            
+    def runFaces(self):
+        HAAR_CASCADE_PATH = "haarcascade_frontalface_default.xml"
+        CAMERA_INDEX = 0
+        cv.NamedWindow("Video", cv.CV_WINDOW_AUTOSIZE)
+ 
+        capture = cv.CaptureFromCAM(CAMERA_INDEX)
+        self.storage = cv.CreateMemStorage()
+        self.cascade = cv.Load(HAAR_CASCADE_PATH)
+        
+        faces = []
+     
+        i = 0
+        c = -1
+        while (c == -1):
+            image = cv.QueryFrame(capture)
+    
+            # Only run the Detection algorithm every 5 frames to improve performance
+            #if i%5==0:
+            faces = self.detect_faces(image)
+            detected = 0
+    
+            for (x,y,w,h) in faces:
+                detected = 1
+                cv.Rectangle(image, (x,y), (x+w,y+h), 255)
+                print x,y
+                self.WriteXY(x,y)
+            if detected == 0:
+                self.WriteXY(-1, -1)
+                
+            cv.ShowImage("Video", image)
+            i += 1
+            c = cv.WaitKey(10)
+            
+        
+    def detect_faces(self,image):
+        faces = []
+        detected = cv.HaarDetectObjects(image, self.cascade, self.storage, 1.2, 2, cv.CV_HAAR_DO_CANNY_PRUNING, (100,100))
+        if detected:
+            for (x,y,w,h),n in detected:
+                faces.append((x,y,w,h))
+        return faces
                 
 if __name__=="__main__": 
     color_tracker = ColorTracker() 
-    color_tracker.run() 
+    color_tracker.runFaces() 
